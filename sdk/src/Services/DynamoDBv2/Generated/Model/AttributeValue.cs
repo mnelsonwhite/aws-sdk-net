@@ -44,21 +44,56 @@ namespace Amazon.DynamoDBv2.Model
     /// </summary>
     public partial class AttributeValue
     {
-        private MemoryStream _b;
-        private bool? _bool;
-        private List<MemoryStream> _bs = new List<MemoryStream>();
-        private List<AttributeValue> _l = new List<AttributeValue>();
-        private Dictionary<string, AttributeValue> _m = new Dictionary<string, AttributeValue>();
-        private string _n;
-        private List<string> _ns = new List<string>();
-        private bool? _null;
-        private string _s;
-        private List<string> _ss = new List<string>();
+        private AttributeValueType _type;
+        private bool _isSet;
+        private object _value;
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="value"></param>
+        public AttributeValue(object value, AttributeValueType type)
+        {
+            this._type = type;
+            this._value = value;
+            this._isSet = true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool HasValue
+        {
+            get { return _isSet; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public object Value
+        {
+            get { return _value; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public AttributeValueType AttributeType
+        {
+            get { return _type; }
+        }
 
         /// <summary>
         /// Empty constructor used to set  properties independently even when a simple constructor is available
         /// </summary>
-        public AttributeValue() { }
+        [Obsolete("Use constructor with value and type parameters")]
+        public AttributeValue() {
+            this._type = AttributeValueType.Unknown;
+            this._value = default;
+            this._isSet = false;
+        }
 
         /// <summary>
         /// Instantiates AttributeValue with the parameterized properties
@@ -66,7 +101,9 @@ namespace Amazon.DynamoDBv2.Model
         /// <param name="s">An attribute of type String. For example:  <code>"S": "Hello"</code> </param>
         public AttributeValue(string s)
         {
-            _s = s;
+            this._type = AttributeValueType.String;
+            this._value = s;
+            this._isSet = true;
         }
 
         /// <summary>
@@ -75,7 +112,9 @@ namespace Amazon.DynamoDBv2.Model
         /// <param name="ss">An attribute of type String Set. For example:  <code>"SS": ["Giraffe", "Hippo" ,"Zebra"]</code> </param>
         public AttributeValue(List<string> ss)
         {
-            _ss = ss;
+            this._type = AttributeValueType.StringSet;
+            this._value = ss;
+            this._isSet = true;
         }
 
         /// <summary>
@@ -90,14 +129,27 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public MemoryStream B
         {
-            get { return this._b; }
-            set { this._b = value; }
+            get
+            {
+                if (this._type == AttributeValueType.Binary
+                    && this._value is MemoryStream memoryStream)
+                {
+                    return memoryStream;
+                }
+                
+                return default;
+            }
+            set
+            {
+                this._type = AttributeValueType.Binary;
+                this._value = value;
+            }
         }
 
         // Check to see if B property is set
         internal bool IsSetB()
         {
-            return this._b != null;
+            return this._type == AttributeValueType.Binary && this._isSet;
         }
 
         /// <summary>
@@ -112,8 +164,19 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public bool BOOL
         {
-            get { return this._bool.GetValueOrDefault(); }
-            set { this._bool = value; }
+            get
+            {
+                return this._type == AttributeValueType.Boolean
+                    && this._isSet
+                    && this._value is bool b
+                    ? b : default;
+            }
+            set
+            {
+                this._type = AttributeValueType.Boolean;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         /// <summary>
@@ -130,18 +193,22 @@ namespace Amazon.DynamoDBv2.Model
         {
             get
             {
-                return Amazon.Util.Internal.InternalSDKUtils.GetIsSet(this._bool);
+                return this._type == AttributeValueType.Boolean
+                    && this._isSet;
             }
             set
             {
-                Amazon.Util.Internal.InternalSDKUtils.SetIsSet(value, ref this._bool);
+                this._type = AttributeValueType.Boolean;
+                this._value = default(bool);
+                this._isSet = value;
             }
         }
 
         // Check to see if BOOL property is set
         internal bool IsSetBOOL()
         {
-            return this.IsBOOLSet; 
+            return this._type == AttributeValueType.Boolean
+                && this._isSet;
         }
 
         /// <summary>
@@ -156,14 +223,31 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public List<MemoryStream> BS
         {
-            get { return this._bs; }
-            set { this._bs = value; }
+            get
+            {
+                if (this._type == AttributeValueType.BinarySet
+                    && this._isSet
+                    && this._value is List<MemoryStream> memoryStreamSet)
+                {
+                    return memoryStreamSet;
+                }
+
+                return default;
+            }
+            set {
+                this._type = AttributeValueType.BooleanSet;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         // Check to see if BS property is set
         internal bool IsSetBS()
         {
-            return this._bs != null && this._bs.Count > 0; 
+            return this._type == AttributeValueType.BinarySet
+                && this._isSet
+                && this._value is List<MemoryStream> memoryStreamSet
+                && memoryStreamSet.Count > 0;
         }
 
         /// <summary>
@@ -178,8 +262,21 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public List<AttributeValue> L
         {
-            get { return this._l; }
-            set { this._l = value; }
+            get {
+                if (this._type == AttributeValueType.BinarySet
+                    && this._isSet
+                    && this._value is List<AttributeValue> list)
+                {
+                    return list;
+                }
+
+                return default;
+            }
+            set {
+                this._type = AttributeValueType.List;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         /// <summary>
@@ -196,18 +293,22 @@ namespace Amazon.DynamoDBv2.Model
         {
             get
             {
-                return Amazon.Util.Internal.InternalSDKUtils.GetIsSet(this._l);
+                return this._type == AttributeValueType.List
+                    && this._isSet;
             }
             set
             {
-                Amazon.Util.Internal.InternalSDKUtils.SetIsSet(value, ref this._l);
+                this._type = AttributeValueType.List;
+                this._value = default(List<AttributeValue>);
+                this._isSet = value;
             }
         }
 
         // Check to see if L property is set
         internal bool IsSetL()
         {
-            return this.IsLSet; 
+            return this._type == AttributeValueType.List
+                && this._isSet;
         }
 
         /// <summary>
@@ -222,8 +323,17 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public Dictionary<string, AttributeValue> M
         {
-            get { return this._m; }
-            set { this._m = value; }
+            get {
+                return this._type == AttributeValueType.Map
+                   && this._isSet
+                   && this._value is Dictionary<string, AttributeValue> map
+                   ? map: default;
+            }
+            set {
+                this._type = AttributeValueType.Map;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         /// <summary>
@@ -240,18 +350,22 @@ namespace Amazon.DynamoDBv2.Model
         {
             get
             {
-                return Amazon.Util.Internal.InternalSDKUtils.GetIsSet(this._m);
+                return this._type == AttributeValueType.MapSet
+                    && this._isSet;
             }
             set
             {
-                Amazon.Util.Internal.InternalSDKUtils.SetIsSet(value, ref this._m);
+                this._type = AttributeValueType.MapSet;
+                this._value = default(bool);
+                this._isSet = value;
             }
         }
 
         // Check to see if M property is set
         internal bool IsSetM()
         {
-            return this.IsMSet; 
+            return this._type == AttributeValueType.MapSet
+                && this._isSet;
         }
 
         /// <summary>
@@ -272,14 +386,28 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public string N
         {
-            get { return this._n; }
-            set { this._n = value; }
+            get {
+                if (this._type == AttributeValueType.Number
+                    && this._isSet
+                    && this._value is string s)
+                {
+                    return s;
+                }
+
+                return default;
+            }
+            set {
+                this._type = AttributeValueType.Number;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         // Check to see if N property is set
         internal bool IsSetN()
         {
-            return this._n != null;
+            return this._type == AttributeValueType.Number
+                && this._isSet;
         }
 
         /// <summary>
@@ -300,14 +428,28 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public List<string> NS
         {
-            get { return this._ns; }
-            set { this._ns = value; }
+            get {
+                if (this._type == AttributeValueType.NumberSet
+                    && this._isSet
+                    && this._value is List<string> list)
+                {
+                    return list;
+                }
+
+                return default;
+            }
+            set {
+                this._type = AttributeValueType.NumberSet;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         // Check to see if NS property is set
         internal bool IsSetNS()
         {
-            return this._ns != null && this._ns.Count > 0; 
+            return this._type == AttributeValueType.NumberSet
+                && this._isSet;
         }
 
         /// <summary>
@@ -322,14 +464,24 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public bool NULL
         {
-            get { return this._null.GetValueOrDefault(); }
-            set { this._null = value; }
+            get {
+                return this._type == AttributeValueType.Null
+                    && this._isSet
+                    && this._value is bool b
+                    ? b : default;
+            }
+            set {
+                this._type = AttributeValueType.Null;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         // Check to see if NULL property is set
         internal bool IsSetNULL()
         {
-            return this._null.HasValue; 
+            return this._type == AttributeValueType.Null
+                && this._isSet;
         }
 
         /// <summary>
@@ -344,14 +496,28 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public string S
         {
-            get { return this._s; }
-            set { this._s = value; }
+            get {
+                if (this._type == AttributeValueType.String
+                    && this._isSet
+                    && this._value is string s)
+                {
+                    return s;
+                }
+
+                return default;
+            }
+            set {
+                this._type = AttributeValueType.String;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         // Check to see if S property is set
         internal bool IsSetS()
         {
-            return this._s != null;
+            return this._type == AttributeValueType.String
+                && this._isSet;
         }
 
         /// <summary>
@@ -366,14 +532,30 @@ namespace Amazon.DynamoDBv2.Model
         /// </summary>
         public List<string> SS
         {
-            get { return this._ss; }
-            set { this._ss = value; }
+            get
+            {
+                if (this._type == AttributeValueType.StringSet
+                    && this._isSet
+                    && this._value is List<string> stringSet)
+                {
+                    return stringSet;
+                }
+
+                return default;
+            }
+            set
+            {
+                this._type = AttributeValueType.StringSet;
+                this._value = value;
+                this._isSet = true;
+            }
         }
 
         // Check to see if SS property is set
         internal bool IsSetSS()
         {
-            return this._ss != null && this._ss.Count > 0; 
+            return this._type == AttributeValueType.StringSet
+                && this._isSet;
         }
 
     }
